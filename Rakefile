@@ -15,8 +15,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "fluffery"
   gem.homepage = "http://github.com/kurbmedia/fluffery"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{ummm.. Adds misc fluffery to yer apps.}
+  gem.description = %Q{Because sometimes you just need to add a little fluff to make it awesome.}
   gem.email = "brent@kurbmedia.com"
   gem.authors = ["Brent Kirby"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
