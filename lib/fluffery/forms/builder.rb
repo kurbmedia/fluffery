@@ -43,17 +43,18 @@ module Fluffery
         
         options.reverse_merge!('transform' => :titleize) unless option_exists?(options['transform'])
         text.send(options['transform'].to_sym)
+        options.delete('transform')
         
         # Check to see if :required is set on a label, or if the attribute/method has a validator that require it exists. 
         # If so, add a * to the label.
-        text = "#{text} <abbr title='Required'>*</abbr>".html_safe if attribute_required?(method, options)
+        text = "#{text} <abbr title='Required'>*</abbr>".html_safe if validator.attribute_required?(method, options)
         super(method, text, options, &block)
 
       end
       
       def email_field(method, options = {})
         render_with_fluff(method, options) do
-          text_field(method, options.merge!('type' => 'email'))
+          super(method, options.merge!('type' => 'email'))
         end
       end
       
