@@ -3,6 +3,22 @@ module Fluffery
     
     module Elements
       
+      # Simply overriding the default form_for to add additional html options/attributes.      
+      def form_for(record_or_name_or_array, *args, &block)
+        
+        options = args.last.is_a?(Hash) ? args.pop : {}
+        options[:html] ||= {}
+        
+        # Add support for the 'ajax' uploader.        
+        options[:html].merge!('data-remote-uploadable' => true) if options.delete(:remote_upload)        
+        # Add support for javascript validation.
+        options[:html].merge!('data-js-validatable' => true) if options.delete(:validate)
+        
+        args = (args << options)         
+        super(record_or_name_or_array, *args, &block)
+        
+      end
+      
       # Creates a common format for CSS buttons
       # Example: button_link('Blog', '/blog') yields <a href="/blog" class="button"><span>Blog</span></a>
 

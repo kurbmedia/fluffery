@@ -13,8 +13,8 @@ module Fluffery
       #
       def initialize(object_name, object, template, options, proc)
         without_error_proc do
-          super(object_name, object, template, options, proc)
-        end
+          super(object_name, object, template, options, proc)          
+        end        
       end
       
       # Creates a html button tag for use in forms instead of the default input submit.
