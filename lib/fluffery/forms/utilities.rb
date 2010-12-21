@@ -58,10 +58,12 @@ module Fluffery
         html_tag = block.call
         return html_tag if template.nil? or template.blank?
         
-        renderer            = ERB.new(template, 0, "%<>")        
-        messages            = @object.errors[method.to_sym]        
+        renderer            = ERB.new(template)
+        messages            = @object.errors[method.to_sym]
         message_error_class = configs[:message_error_class]
-        renderer.result.to_s.html_safe
+        renderer.result(
+          OpenStruct.new(configs.merge!(:messages => messages)).send(:binding)
+          ).to_s.html_safe
         
       end
       
