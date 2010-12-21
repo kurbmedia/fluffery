@@ -2,8 +2,7 @@ require 'fluffery/railtie'
 
 module Fluffery
   
-  autoload :Config, 'fluffery/config'
-  autoload :Util,   'fluffery/util'
+  autoload :Config,    'fluffery/config'
   
   module Forms
     autoload :Builder,    'fluffery/forms/builder'

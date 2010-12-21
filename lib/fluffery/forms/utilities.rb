@@ -52,7 +52,7 @@ module Fluffery
         configs     = Fluffery::Config.forms
         template    = configs[:error_template]
         error_class = configs[:error_class]
-        options     = Fluffery::Utilities::Internal.merge_html_classes(options, error_class)
+        options     = Fluffery::Utils::Internal.merge_html_classes(options, error_class)
         
         # Capture the original html tag with any updated options.
         html_tag = block.call
