@@ -16,6 +16,7 @@ module Fluffery
           options = Presence.create(attribute, options) if attribute_required?(attribute)
           matcher = attribute_format_validator(attribute)
           options = Pattern.create(attribute, options, matcher) unless matcher.nil?
+          options.reverse_merge!(default_messages_for(attribute))
           options
         end
         
@@ -40,6 +41,16 @@ module Fluffery
           return nil unless !format_validator.nil?
           return nil unless format_validator.options.has_key?(:with) && format_validator.options[:with].is_a?(Regexp)
           matcher = format_validator.options[:with]
+        end
+        
+        # Looks up the default error message so it may be used in our data-message attribute
+        #
+        def default_messages_for(attribute)
+          messages = validators_for(attribute).inject([]) do |arr, validator|
+            validator.options.has_key?(:message) ? arr.push(validator.options[:message]) : arr.push(MessageBuilder.message_for(@object, attribute, validator.kind))
+            arr
+          end
+          {'data-message' => messages.join(', ')}
         end
 
         # Checks to see if the particular attribute has errors
@@ -78,6 +89,29 @@ module Fluffery
         
         def validators_for?(method)
           !validators_for(method).empty?
+        end
+        
+      end
+      
+      class MessageBuilder
+        def self.message_for(object, attribute, validator = :presence)
+          if defined?(ActiveModel::Errors)
+            err = ActiveModel::Errors.new(object)
+            msg = err.generate_message(attribute, validator)
+            msg = msg.match(/translation missing/i).nil? ? msg : self.defaults(validator)
+          else
+            msg = self.defaults(validator)
+          end
+          msg
+        end
+        
+        private
+        
+        def self.defaults(validator)
+          {
+            :presence => 'this field is required',
+            :format   => 'invalid format'            
+          }[validator]
         end
         
       end
