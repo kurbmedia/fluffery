@@ -1,5 +1,10 @@
 require 'rubygems'
 require 'bundler'
+require "rake"
+require "rake/rdoctask"
+require "rspec"
+require "rspec/core/rake_task"
+
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -26,18 +31,16 @@ Jeweler::Tasks.new do |gem|
 end
 Jeweler::RubygemsDotOrgTasks.new
 
-require 'rake/testtask'
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
+Rspec::Core::RakeTask.new(:spec) do |spec|
+  spec.pattern = "spec/**/*_spec.rb"
 end
 
-require 'rcov/rcovtask'
-Rcov::RcovTask.new do |test|
-  test.libs << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
+Rspec::Core::RakeTask.new("spec:unit") do |spec|
+  spec.pattern = "spec/unit/**/*_spec.rb"
+end
+
+Rspec::Core::RakeTask.new("spec:integration") do |spec|
+  spec.pattern = "spec/integration/**/*_spec.rb"
 end
 
 task :default => :test

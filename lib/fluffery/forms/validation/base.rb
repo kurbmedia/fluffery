@@ -46,11 +46,12 @@ module Fluffery
         # Looks up the default error message so it may be used in our data-message attribute
         #
         def default_messages_for(attribute)
-          messages = validators_for(attribute).inject([]) do |arr, validator|
-            validator.options.has_key?(:message) ? arr.push(validator.options[:message]) : arr.push(MessageBuilder.message_for(@object, attribute, validator.kind))
-            arr
+          validators   = validators_for(attribute)
+          message_data = validators.inject({}) do |hash, validator|
+            message = validator.options.has_key?(:message) ? validator.options[:message] : MessageBuilder.message_for(@object, attribute, validator)
+            hash.merge!(validator.kind.to_s => message)
           end
-          {'data-message' => messages.join(', ')}
+          {'data-validation-messages' => CGI::escape(message_data.to_json), 'data-validators' => validators.collect{ |v| v.kind.to_s }.join(' ') }
         end
 
         # Checks to see if the particular attribute has errors
@@ -84,7 +85,7 @@ module Fluffery
         def validators_for(attribute)
           return [] unless !@object.nil? and @object.class.respond_to?(:validators_on)
           attribute  = attribute.to_s.sub(/_id$/, '').to_sym
-          validators = @object.class.validators_on(attribute).collect{ |validator| validator }.uniq
+          validators = @object.class.validators_on(attribute).uniq
         end
         
         def validators_for?(method)
@@ -94,24 +95,71 @@ module Fluffery
       end
       
       class MessageBuilder
-        def self.message_for(object, attribute, validator = :presence)
-          if defined?(ActiveModel::Errors)
-            err = ActiveModel::Errors.new(object)
-            msg = err.generate_message(attribute, validator)
-            msg = msg.match(/translation missing/i).nil? ? msg : self.defaults(validator)
-          else
-            msg = self.defaults(validator)
-          end
-          msg
+        def self.message_for(object, attribute, validator)
+          message = self.get_validation_message(validator)
+          message = self.defaults(validator.kind) unless message.match(/translation missing/i).nil?
+          message
         end
         
         private
         
         def self.defaults(validator)
           {
-            :presence => 'this field is required',
-            :format   => 'invalid format'            
+            :presence     => "required",
+            :format       => 'invalid',
+            :length       => "wrong length",
+            :numericality => "not a number",
+            :uniqueness   => 'taken',
+            :confirmation => 'required',
+            :acceptance   => 'required',
+            :inclusion    => 'invalid',
+            :exclusion    => 'invalid'
           }[validator]
+        end
+        
+        def self.get_validation_message(validator)
+          key = {
+            :presence     => "blank",
+            :format       => 'invalid',
+            :length       => self.length_options(validator.options),
+            :numericality => self.numericality_options(validator.options),
+            :uniqueness   => 'taken',
+            :confirmation => 'confirmation',
+            :acceptance   => 'accepted',
+            :inclusion    => 'inclusion',
+            :exclusion    => 'exclusion'
+          }[validator.kind]
+          key.is_a?(Array) ? I18n.translate("errors.messages.#{key.first}").sub("%{#{:count}}", key.last.to_s) : I18n.translate("errors.messages.#{key}")
+        end
+
+        def self.length_options(opts)
+          if count = opts[:is]
+            ["wrong_length", count]
+          elsif count = opts[:minimum]
+            ["too_short", count]
+          elsif count = opts[:maximum]
+            ["too_long", count]
+          end
+        end
+
+        def self.numericality_options(opts)
+          if opts[:only_integer]
+            'not_a_number'
+          elsif count = opts[:greater_than]
+            ['greater_than', count]
+          elsif count = opts[:greater_than_or_equal_to]
+            ['greater_than_or_equal_to', count]
+          elsif count = opts[:less_than]
+            ['less_than', count]
+          elsif count = opts[:less_than_or_equal_to]
+            ['less_than_or_equal_to', count]
+          elsif opts[:odd]
+            'odd'
+          elsif opts[:even]
+            'even'
+          else
+            'not_a_number'
+          end
         end
         
       end

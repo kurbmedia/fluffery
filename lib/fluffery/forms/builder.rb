@@ -61,9 +61,9 @@ module Fluffery
       # Renders the default date_select but with an error wrapping if 
       # the method in question has errors
       #
-      def date_select(method, options = {})
+      def date_select(method, options = {}, html_options = {})
         render_with_fluff(method, options) do
-          super(method, options)
+          super(method, options, html_options)
         end
       end
       
@@ -96,6 +96,12 @@ module Fluffery
       end
       
       def text_field(method, options = {})
+        render_with_fluff(method, options) do
+          super(method, options)
+        end
+      end
+      
+      def text_area(method, options = {})
         render_with_fluff(method, options) do
           super(method, options)
         end

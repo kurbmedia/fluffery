@@ -40,7 +40,11 @@ Gem::Specification.new do |s|
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
-
+    s.add_development_dependency("rspec", ["~> 2.3"])
+    
+    s.add_development_dependency("rails", [">= 3.0.0"])
+    s.add_development_dependency("actionpack", [">= 3.0.0"])
+    
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.5.1"])

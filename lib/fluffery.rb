@@ -1,12 +1,13 @@
-require 'fluffery/railtie'
+
+require 'fluffery/railtie' if defined?(::Rails::Railtie)
 
 module Fluffery
   
-  autoload :Config,    'fluffery/config'
+  autoload :Config, 'fluffery/config'
   
   module Forms
-    autoload :Builder,    'fluffery/forms/builder'
-    autoload :Utilities,  'fluffery/forms/utilities'
+    autoload :Builder,   'fluffery/forms/builder'
+    autoload :Utilities, 'fluffery/forms/utilities'
   end
   
   module Helpers

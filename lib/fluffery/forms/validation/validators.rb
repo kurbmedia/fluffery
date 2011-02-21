@@ -11,7 +11,7 @@ module Fluffery
       
       class Pattern < Fluffery::Forms::Validation::Base
         def self.create(attribute, options, matcher)
-          options.reverse_merge!('pattern' => matcher) unless matcher.nil?
+          options.reverse_merge!('pattern' => matcher.inspect) unless matcher.nil?
           options
         end        
       end
