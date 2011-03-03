@@ -62,15 +62,9 @@ module Fluffery
       # the method in question has errors
       #
       def date_select(method, options = {}, html_options = {})
-        
-        # TODO: Figure out why rails looses the order option on errors.
-        order_options = options.has_key?(:order) ? options.delete(:order) : nil
-        
         render_with_fluff(method, options, html_options) do
-          options.merge!(:order => order_options) unless order_options.nil?
           super(method, options, html_options)
-        end
-        
+        end        
       end
       
       # HTML5 Number field, again, falls back to text in unsupportive browsers.

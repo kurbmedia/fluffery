@@ -43,7 +43,8 @@ module Fluffery
       # 2. Also add our error class to the field itself.
       #
       def render_with_fluff(method, options, html_options = nil, &block)        
-        options = validator.add_html_attributes(method, options)        
+        _options = html_options.nil? ? options : html_options
+        _options = validator.add_html_attributes(method, _options)
         # If no errors, simply return.
         unless validator.errors_for?(method)
           return block.call
@@ -52,7 +53,8 @@ module Fluffery
         configs     = Fluffery::Config.forms
         template    = configs[:error_template]
         error_class = configs[:error_class]
-        options     = Fluffery::Utils::Internal.merge_html_classes(options, error_class)
+        _options    = Fluffery::Utils::Internal.merge_html_classes(_options, error_class)
+        options     = _options if html_options.nil?
         
         # Capture the original html tag with any updated options.
         html_tag = block.call
