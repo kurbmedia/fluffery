@@ -22,8 +22,8 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
   
-  s.add_dependency(%q<rails>, ["~> 3.0.0"])
-  s.add_dependency(%q<actionpack>, ["~> 3.0.0"])
+  s.add_development_dependency(%q<rails>, ["~> 3.0.0"])
+  s.add_development_dependency(%q<actionpack>, ["~> 3.0.0"])
   s.add_development_dependency(%q<rspec>, ["~> 2.3"])
   s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
   
