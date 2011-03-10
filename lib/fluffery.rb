@@ -1,0 +1,3 @@
+module Fluffery
+  # Your code goes here...
+end
