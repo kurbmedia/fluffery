@@ -78,7 +78,7 @@ module Fluffery
       #
       def without_error_proc
         default_proc = ActionView::Base.field_error_proc
-        ActionView::Base.field_error_proc = lambda{ |html_tag, instance| html_tag }
+        ActionView::Base.field_error_proc, proc = lambda{ |html_tag, instance| html_tag }
         yield        
         ActionView::Base.field_error_proc = default_proc
       end

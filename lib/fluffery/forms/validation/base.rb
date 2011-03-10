@@ -47,11 +47,20 @@ module Fluffery
         #
         def default_messages_for(attribute)
           validators   = validators_for(attribute)
+          return {} if validators.empty?
           message_data = validators.inject({}) do |hash, validator|
             message = validator.options.has_key?(:message) ? validator.options[:message] : MessageBuilder.message_for(@object, attribute, validator)
             hash.merge!(validator.kind.to_s => message)
           end
-          {'data-validation-messages' => CGI::escape(message_data.to_json), 'data-validators' => validators.collect{ |v| v.kind.to_s }.join(' ') }
+          attr_hash = {'data-validation-messages' => CGI::escape(message_data.to_json) }
+          
+          # Create a list of data-validates-* attrs on the field so we can catch them with javascript
+          # Skip presence and format because they have their own valid HTML5 attrs.
+          #
+          validators.reject{ |v| v.kind.to_s.match(/(presence|format)/i) }.each{ |v| attr_hash.merge!("data-validates-#{v.kind.to_s}" => 'true') }
+          
+          attr_hash
+          
         end
 
         # Checks to see if the particular attribute has errors

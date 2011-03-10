@@ -95,6 +95,29 @@ module Fluffery
         end
       end
       
+      def state_select(method, options = {}, html_options = {})
+        
+        state_options = [['Please Select',nil]]
+        state_options << ['International', (int || 'International')] if int = options.delete(:international)
+        [
+            ['Alabama', "AL"],['Alaska', "AK"],['Arizona', "AZ"],['Arkansas', "AR"],['California', "CA"],['Colorado', "CO"],
+          	['Connecticut', "CT"],['District of Columbia', "DC"],['Delaware', "DE"],['Florida', "FL"],['Georgia', "GA"],
+          	['Hawaii', "HI"],['Idaho', "ID"],['Illinois', "IL"],['Indiana', "IN"],['Iowa', "IA"],['Kansas', "KS"],['Kentucky', "KY"],
+          	['Louisiana', "LA"],['Maine', "ME"],['Maryland', "MD"],['Massachusetts', "MA"],['Michigan', "MI"],['Minnesota', "MN"],
+          	['Mississippi', "MS"],['Missouri', "MO"],['Montana', "MT"],['Nebraska', "NE"],['Nevada', "NV"],['New Hampshire', "NH"],
+          	['New Jersey', "NJ"],['New Mexico', "NM"],['New York', "NY"],['North Carolina', "NC"],['North Dakota', "ND"],
+          	['Ohio', "OH"],['Oklahoma', "OK"],['Oregon', "OR"],['Pennsylvania', "PA"],['Rhode Island', "RI"],['South Carolina', "SC"],
+          	['South Dakota', "SD"],['Tennessee', "TN"],['Texas', "TX"],['Utah', "UT"],['Vermont', "VT"],['Virginia', "VA"],['Washington', "WA"],
+          	['West Virginia', "WV"],['Wisconsin', "WI"],['Wyoming', "WY"]
+        ].each do |state|
+          should_abbr = options.delete(:abbreviate)
+          state_options << (should_abbr ? state : [state.first, state.first])
+        end
+        
+        select(method, @template.options_for_select(state_options, @object.try(:state)), options, html_options)
+        
+      end
+      
       def text_field(method, options = {})
         render_with_fluff(method, options) do
           super(method, options)
