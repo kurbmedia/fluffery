@@ -1,3 +1,5 @@
+require 'fluffery/railtie'
+
 module Fluffery
   
   autoload :Config, 'fluffery/config'
