@@ -12,11 +12,12 @@ module Fluffery
       # Sets up options custom to our form builder.
       # It also overrides the default error proc so we can use something more custom.
       #
-      def initialize(object_name, object, template, options, proc)
-        @field_order ||= []
+      def initialize(object_name, object, template, options, proc)        
+        @field_order ||= []        
         without_error_proc do
           super(object_name, object, template, options, proc)          
         end        
+        
       end
       
       # Creates a html button tag for use in forms instead of the default input submit.

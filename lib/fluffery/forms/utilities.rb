@@ -77,6 +77,11 @@ module Fluffery
         @validator ||= Fluffery::Forms::Validation::Base.new(@object)
       end
       
+      # Return any collected validation data
+      def validation_data
+        validator.validation_data.to_json
+      end
+      
       # Override the default error proc for our forms, making sure to
       # set it back when we are finished to avoid compatibility issues.
       #

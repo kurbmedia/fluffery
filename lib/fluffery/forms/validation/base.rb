@@ -2,21 +2,29 @@ module Fluffery
   module Forms
     module Validation
       
+      autoload :Js, 'fluffery/forms/validation/js'
+      
       class Base
         
-        require 'fluffery/forms/validation/validators'
-        
-        attr_accessor :object
+        # Object references our form object.
+        # validation_data stores a hash of all validation information collected on this 
+        # object. This hash can be used as a JSON based object for javascript validation.
+        attr_accessor :object, :validation_data
         
         def initialize(form_object)
           @object = form_object
+          @validation_data = Js.new(@object)
         end
         
-        def add_html_attributes(attribute, options)
-          options = Presence.create(attribute, options) if attribute_required?(attribute)
-          matcher = attribute_format_validator(attribute)
-          options = Pattern.create(attribute, options, matcher) unless matcher.nil?
-          options.reverse_merge!(default_messages_for(attribute))
+        def add!(method, options, type, vattr)
+          options.reverse_merge!(type => vattr)
+          validation_data.add!(method, type, vattr)
+        end
+        
+        def add_html_attributes(method, options)
+          add!(method, options, 'required', 'required') if attribute_required?(method)            
+          matcher = attribute_format_validator(method)
+          add!(method, options, 'pattern', matcher.source) unless matcher.nil?
           options
         end
         
@@ -39,7 +47,7 @@ module Fluffery
         def attribute_format_validator(attribute)          
           format_validator = validators_for(attribute).detect{ |v| v.kind == :format }
           return nil unless !format_validator.nil?
-          return nil unless format_validator.options.has_key?(:with) && format_validator.options[:with].is_a?(Regexp)
+          return nil unless format_validator.options[:with].is_a?(Regexp)
           matcher = format_validator.options[:with]
         end
         
@@ -48,19 +56,10 @@ module Fluffery
         def default_messages_for(attribute)
           validators   = validators_for(attribute)
           return {} if validators.empty?
-          message_data = validators.inject({}) do |hash, validator|
-            message = validator.options.has_key?(:message) ? validator.options[:message] : MessageBuilder.message_for(@object, attribute, validator)
+          validators.inject({}) do |hash, validator|
+            message = validator.options.delete(:message) || MessageBuilder.message_for(@object, attribute, validator)
             hash.merge!(validator.kind.to_s => message)
-          end
-          attr_hash = {'data-validation-messages' => CGI::escape(message_data.to_json) }
-          
-          # Create a list of data-validates-* attrs on the field so we can catch them with javascript
-          # Skip presence and format because they have their own valid HTML5 attrs.
-          #
-          validators.reject{ |v| v.kind.to_s.match(/(presence|format)/i) }.each{ |v| attr_hash.merge!("data-validates-#{v.kind.to_s}" => 'true') }
-          
-          attr_hash
-          
+          end          
         end
 
         # Checks to see if the particular attribute has errors
@@ -106,13 +105,13 @@ module Fluffery
       class MessageBuilder
         def self.message_for(object, attribute, validator)
           message = self.get_validation_message(validator)
-          message = self.defaults(validator.kind) unless message.match(/translation missing/i).nil?
+          message = self.defaults[validator.kind] unless message.match(/translation missing/i).nil?
           message
         end
         
         private
         
-        def self.defaults(validator)
+        def self.defaults
           {
             :presence     => "required",
             :format       => 'invalid',
@@ -123,7 +122,7 @@ module Fluffery
             :acceptance   => 'required',
             :inclusion    => 'invalid',
             :exclusion    => 'invalid'
-          }[validator]
+          }
         end
         
         def self.get_validation_message(validator)
