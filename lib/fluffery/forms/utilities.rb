@@ -47,7 +47,7 @@ module Fluffery
         @field_order << method       
         
         _options = html_options.nil? ? options : html_options
-        _options = validator.add_html_attributes(method, _options)
+        _options = validator.add_validation_data(method, _options)
         
         # If no errors, simply return.
         unless validator.errors_for?(method)

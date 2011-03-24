@@ -16,39 +16,50 @@ module Fluffery
           @validation_data = Js.new(@object)
         end
         
-        def add!(method, options, type, vattr)
-          options.reverse_merge!(type => vattr)
-          validation_data.add!(method, type, vattr)
+        def add!(method, options, type, vattr, option = :all)
+          options.reverse_merge!(type => vattr)     unless option == :js
+          validation_data.add!(method, type, vattr) unless option == :html
         end
         
-        def add_html_attributes(method, options)
-          add!(method, options, 'required', 'required') if attribute_required?(method)            
-          matcher = attribute_format_validator(method)
-          add!(method, options, 'pattern', matcher.source) unless matcher.nil?
+        def add_validation_data(method, options)
+          add!(method, options, 'required', 'required') if attribute_required?(method)
+          [:presence, :format, :length].each{ |v| send(:"attribute_#{v.to_s}_validator", method, options) }
           options
         end
         
         # Checks to see if the particular attribute is required, used primarily on labels.
         #
-        def attribute_required?(attribute, options = nil)
-          options.stringify_keys! if options.is_a?(Hash)
-          unless options.nil?
-            return true if options.has_key?('required') and options['required'] === true
-          end
+        def attribute_required?(attribute, options = {})
+          (options.stringify_keys!.delete('required') === true)
+        end
+        
+        # Checks to see if a particular attribute contains a presence validator
+        #
+        def attribute_presence_validator(attribute, options)
           valid_items = validators_for(attribute).find do |validator| 
             ([:presence, :inclusion].include?(validator.kind)) && 
             (validator.options.present? ? options_require_validation?(validator.options) : true)
           end        
-          !valid_items.nil?        
+          add!(attribute, options, 'required', 'required') unless valid_items.nil?
         end
         
         # Checks to see if a particular attribute contains a Regex format validator
         #
-        def attribute_format_validator(attribute)          
+        def attribute_format_validator(attribute, options)          
           format_validator = validators_for(attribute).detect{ |v| v.kind == :format }
-          return nil unless !format_validator.nil?
-          return nil unless format_validator.options[:with].is_a?(Regexp)
+          return if format_validator.nil? or !format_validator.options.present?
           matcher = format_validator.options[:with]
+          add!(attribute, options, 'pattern', matcher.source) unless matcher.nil? or options_require_validation?(format_validator.options)
+        end
+        
+        def attribute_length_validator(attribute, options)
+          len_validator = validators_for(attribute).detect{ |v| v.kind == :length }
+          return if len_validator.nil? or !len_validator.options.present?
+          between = len_validator.options[:between].try(:to_a)
+          minimum = len_validator.options[:minimum] || [between].flatten.first || nil
+          maximum = len_validator.options[:maximum] || [between].flatten.last  || nil
+          add!(attribute, options, 'min', min) unless minimum.nil? or !options_require_validation?(len_validator.options)
+          add!(attribute, options, 'max', max) unless maximum.nil? or !options_require_validation?(len_validator.options)
         end
         
         # Looks up the default error message so it may be used in our data-message attribute
@@ -57,7 +68,7 @@ module Fluffery
           validators   = validators_for(attribute)
           return {} if validators.empty?
           validators.inject({}) do |hash, validator|
-            message = validator.options.delete(:message) || MessageBuilder.message_for(@object, attribute, validator)
+            message = validator.options[:message] || MessageBuilder.message_for(@object, attribute, validator)
             hash.merge!(validator.kind.to_s => message)
           end          
         end
