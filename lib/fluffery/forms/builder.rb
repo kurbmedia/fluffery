@@ -5,13 +5,15 @@ module Fluffery
       
       include Fluffery::Forms::Utilities
       
-      # Access the template object
-      attr_accessor :template
+      # Access the template object, and create an accessor which will track the order
+      # in which our fields are used in the form. This way we have the ability to capture that state for re-use in emails etc.
+      attr_accessor :template, :field_order
       
       # Sets up options custom to our form builder.
       # It also overrides the default error proc so we can use something more custom.
       #
       def initialize(object_name, object, template, options, proc)
+        @field_order ||= []
         without_error_proc do
           super(object_name, object, template, options, proc)          
         end        

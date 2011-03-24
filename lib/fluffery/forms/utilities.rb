@@ -42,9 +42,13 @@ module Fluffery
       # 1. If a field has errors, wrap it with the defined error template.
       # 2. Also add our error class to the field itself.
       #
-      def render_with_fluff(method, options, html_options = nil, &block)        
+      def render_with_fluff(method, options, html_options = nil, &block)
+        
+        @field_order << method       
+        
         _options = html_options.nil? ? options : html_options
         _options = validator.add_html_attributes(method, _options)
+        
         # If no errors, simply return.
         unless validator.errors_for?(method)
           return block.call
